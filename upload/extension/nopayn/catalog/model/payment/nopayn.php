@@ -97,7 +97,7 @@ class Nopayn extends \Opencart\System\Engine\Model {
     public function getTransactionByOrderId(int $orderId): array {
         $query = $this->db->query(
             "SELECT * FROM `" . DB_PREFIX . "nopayn_transactions` "
-            . "WHERE `order_id` = '" . (int)$orderId . "' ORDER BY `id` DESC LIMIT 1"
+            . "WHERE `order_id` = '" . (int)$orderId . "' ORDER BY `transaction_id` DESC LIMIT 1"
         );
         return $query->row ?: [];
     }

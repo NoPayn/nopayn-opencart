@@ -85,7 +85,7 @@ class Nopayn extends \Opencart\System\Engine\Controller {
             $this->model_checkout_order->addHistory($orderId, $pendingStatusId, 'NoPayn: Redirecting to payment page', false);
         }
 
-        $shopUrl = ($this->request->server['HTTPS'] ? HTTPS_SERVER : HTTP_SERVER);
+        $shopUrl = $this->config->get('config_url');
         $lang = $this->config->get('config_language');
 
         $token = bin2hex(random_bytes(32));
@@ -131,9 +131,15 @@ class Nopayn extends \Opencart\System\Engine\Controller {
         }
 
         $nopaynOrderId = $response['id'] ?? '';
-        $orderUrl = $response['order_url'] ?? '';
 
-        if (!$nopaynOrderId || !$orderUrl) {
+        $paymentUrl = '';
+        if (!empty($response['transactions'][0]['payment_url'])) {
+            $paymentUrl = $response['transactions'][0]['payment_url'];
+        } elseif (!empty($response['order_url'])) {
+            $paymentUrl = $response['order_url'];
+        }
+
+        if (!$nopaynOrderId || !$paymentUrl) {
             $json['error'] = $this->language->get('error_gateway');
             $this->respondJson($json);
             return;
@@ -144,7 +150,7 @@ class Nopayn extends \Opencart\System\Engine\Controller {
 
         $this->session->data['nopayn_order_id'] = $nopaynOrderId;
 
-        $json['redirect'] = $orderUrl;
+        $json['redirect'] = $paymentUrl;
 
         $this->respondJson($json);
     }
